@@ -10,4 +10,15 @@ contract SimpleTestCompetition is OptimizationCompetition(500, true) {
         //optimum: x = 1
         return (parameters[0] - 1) * (parameters[0] - 1);
     }
+
+    /*
+    nonnegativity constraint
+    */
+    function constraints(int[] parameters) private pure returns(bool) {
+    	if (parameters[0] < 0) {
+    		return false;
+    	} else {
+    		return true;
+    	}
+    }
 }

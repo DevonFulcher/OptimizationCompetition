@@ -16,6 +16,7 @@ contract OptimizationCompetition {
     //will win the competition.
     bool private _minimizeObjective;
     function objectiveFunction(int[] parameters) private pure returns(int y);
+    function constraints(int[] parameters) private pure returns(bool);
     event CompetitionEnded(int optimumSolution, int[] optimumParameters);
     event NewOptimum(int optimumSolution, int[] optimumParameters);
     
@@ -45,22 +46,26 @@ contract OptimizationCompetition {
      */
     function runCandidateSolution(int[] parameters) public {
         require(now < _competitionEnd);
-        int candidateSolution = objectiveFunction(parameters);
-        bool newOptimum = false;
-        if (_minimizeObjective) {
-            if (candidateSolution < optimumSolution) {
-                newOptimum = true;
+        if (constraints(int[] parameters)) {
+            int candidateSolution = objectiveFunction(parameters);
+            bool newOptimum = false;
+            if (_minimizeObjective) {
+                if (candidateSolution < optimumSolution) {
+                    newOptimum = true;
+                }
+            } else {
+                if (candidateSolution > optimumSolution) {
+                    newOptimum = true;
+                }
+            }
+            if (newOptimum) {
+                optimumSolution = candidateSolution;
+                optimumSolutionAddress = msg.sender;
+                optimumParameters = parameters;
+                emit NewOptimum(optimumSolution, optimumParameters);
             }
         } else {
-            if (candidateSolution > optimumSolution) {
-                newOptimum = true;
-            }
-        }
-        if (newOptimum) {
-            optimumSolution = candidateSolution;
-            optimumSolutionAddress = msg.sender;
-            optimumParameters = parameters;
-            emit NewOptimum(optimumSolution, optimumParameters);
+            revert("constraints not satisfied");
         }
     }
     
